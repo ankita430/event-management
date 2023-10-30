@@ -1,0 +1,105 @@
+const express = require('express');
+const app = express();
+const bodyParser = require('body-parser');
+const { PrismaClient } = require('@prisma/client');
+
+const prisma = new PrismaClient();
+
+app.use(bodyParser.json());
+
+// Create event attendance
+app.post('/event-attendance', async (req, res) => {
+  const { eventId, userId, status } = req.body;
+  
+  try {
+    const attendance = await prisma.eventAttendance.create({
+      data: {
+        eventId,
+        userId,
+        status,
+      },
+    });
+    res.status(201).json(attendance);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Something went wrong",
+      error,
+    });
+  }
+});
+
+// Get event attendance by ID
+app.get('/event-attendance/:attendance_id', async (req, res) => {
+  const attendanceId = parseInt(req.params.attendance_id);
+  try {
+    const attendance = await prisma.eventAttendance.findUnique({
+      where: {
+        id: attendanceId,
+      },
+    });
+
+    if (!attendance) {
+      res.status(404).json({ message: 'Event attendance not found' });
+    } else {
+      res.status(200).json(attendance);
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Something went wrong",
+      error,
+    });
+  }
+});
+
+// Update event attendance by ID
+app.put('/event-attendance/:attendance_id', async (req, res) => {
+  const attendanceId = parseInt(req.params.attendance_id);
+  const { status } = req.body;
+
+  try {
+    const attendance = await prisma.eventAttendance.update({
+      where: {
+        id: attendanceId,
+      },
+      data: {
+        status,
+      },
+    });
+
+    res.status(200).json(attendance);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Something went wrong",
+      error,
+    });
+  }
+});
+
+// Delete event attendance by ID
+app.delete('/event-attendance/:attendance_id', async (req, res) => {
+  const attendanceId = parseInt(req.params.attendance_id);
+
+  try {
+    const attendance = await prisma.eventAttendance.delete({
+      where: {
+        id: attendanceId,
+      },
+    });
+
+    res.status(200).json(attendance);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Something went wrong",
+      error,
+    });
+  }
+});
+
+const port = 3000;
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
