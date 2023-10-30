@@ -1,0 +1,110 @@
+import { PrismaClient } from "@prisma/client";
+import { config } from "dotenv";
+config();
+
+const prisma = new PrismaClient();
+
+const venuesController = () => {
+  return {
+    async create(req, res) {
+      const { name, location, capacity } = req.body;
+      try {
+        const venue = await prisma.venues.create({
+          data: {
+            name,
+            location,
+            capacity,
+          },
+        });
+        res.status(201).json({
+          message: "Venue created successfully",
+          venue,
+        });
+      } catch (error) {
+        console.log(error);
+        res.status(500).json({
+          message: "Something went wrong",
+          error,
+        });
+      }
+    },
+
+    async getVenue(req, res) {
+      const { id } = req.params;
+      try {
+        const venue = await prisma.venues.findUnique({
+          where: {
+            id: parseInt(id),
+          },
+        });
+        if (!venue) {
+          return res.status(404).json({
+            message: "Venue not found",
+          });
+        }
+        res.status(200).json({
+          message: "Venue found",
+          venue,
+        });
+      } catch (error) {
+        console.log(error);
+        res.status(500).json({
+          message: "Something went wrong",
+          error,
+        });
+      }
+    },
+
+    async updateVenue(req, res) {
+      const { id } = req.params;
+      const { name, location, capacity } = req.body;
+      try {
+        const venue = await prisma.venues.update({
+          where: {
+            id: parseInt(id),
+          },
+          data: {
+            name,
+            location,
+            capacity,
+          },
+        });
+
+        res.status(200).json({
+          message: "Venue updated successfully",
+          venue,
+        });
+      } catch (error) {
+        console.log(error);
+        res.status(500).json({
+          message: "Something went wrong",
+          error,
+        });
+      }
+    },
+
+    async deleteVenue(req, res) {
+      const { id } = req.params;
+      try {
+        const venue = await prisma.venues.delete({
+          where: {
+            id: parseInt(id),
+          },
+        });
+
+        res.status(200).json({
+          message: "Venue deleted successfully",
+          venue,
+        });
+      } catch (error) {
+        console.log(error);
+        res.status(500).json({
+          message: "Something went wrong",
+          error,
+        });
+      }
+    },
+  };
+};
+
+export default venuesController;
